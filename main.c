@@ -12,26 +12,34 @@ int main(int argc, char* argv[])
 	struct in_addr sender_ip;
 	struct in_addr target_ip;
 	int i;
-	
-	/*	
-	if(argc != 4)
+	char sender_string[100] = {0,};
+	char num_string[10] = {0,};
+		
+	if(argc != 3)
 	{
-		printf("Usage: ./send_arp [interface] [sender_ip] [target_ip]\n");
+		printf("Usage: ./send_arp [interface] [ip_addr]\n");
+		return 0;
 	}
-	*/
-	inet_aton(argv[2],&sender_ip);
-	inet_aton(argv[3],&target_ip);
 
-	handle = pcap_open_live(argv[1],BUFSIZ,1,1000,errbuf);
+
+
 	
+	handle = pcap_open_live(argv[1],BUFSIZ,1,1000,errbuf);
 	get_addr(MAC_addr,&my_IP ,argv[1]);
 
 	printf("%s\n",inet_ntoa(my_IP));
-	rs_ARP(handle,MAC_addr,broadcast_MAC,&my_IP , &sender_ip,1); // request mode
-	get_senders_mac(handle, &sender_ip, senders_MAC);
-	for(i=0;i<10;i++)
+	for(i=0; i<256; i++)
 	{
-		rs_ARP(handle,MAC_addr,senders_MAC ,&target_ip, &sender_ip, 2); //send mode
-	}
+		memset(sender_string,0,100);
+		strcpy(sender_string, argv[2]);
+		sprintf(num_string,".%d", i);
+		strcat(sender_string,num_string);
+		printf("send packet: %s\n",sender_string);
+		inet_aton(sender_string,&sender_ip);
+		rs_ARP(handle,MAC_addr,broadcast_MAC,&my_IP , &sender_ip,1);
+		printf("aa\n");
+	}// request mode
+	get_senders_mac(handle,5);
+	
 	return 0;
 }
